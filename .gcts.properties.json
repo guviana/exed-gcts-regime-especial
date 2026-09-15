@@ -1,0 +1,12 @@
+{
+  "name": "guviana-exed-gcts-regime-especial",
+  "version": "1.0.0",
+  "description": "guviana-exed-gcts-regime-especial",
+  "repositoryLayout": {
+    "format": "json",
+    "formatVersion": "6",
+    "keepClient": "false",
+    "metaInformation": ".gctsmetadata/",
+    "tableContent": "true"
+  }
+}
