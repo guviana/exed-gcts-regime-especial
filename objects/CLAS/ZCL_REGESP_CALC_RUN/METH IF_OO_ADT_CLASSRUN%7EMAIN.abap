@@ -1,9 +1,11 @@
   METHOD if_oo_adt_classrun~main.
-
+types ty_char16 type c length 16.
+types ty_char9 type c length 9.
+types ty_char3 type c length 3.
     " >>> valores fixos para o teste <
-    DATA(lv_ncm)      = CONV char16( '12.1.2' ).
-    DATA(lv_cest)     = CONV char9( '4.5.6' ).
-    DATA(lv_group)    = CONV char3( '001' ).
+    DATA(lv_ncm)      = CONV ty_char16( '12.1.2' ).
+    DATA(lv_cest)     = CONV ty_char9( '4.5.6' ).
+    DATA(lv_group)    = CONV ty_char3( '001' ).
     DATA(lv_material) = CONV matnr( '000000000010000002' ).
 
     DATA(lv_bruto)    = CONV zcl_regesp_perc_bo=>ty_amount( '317.68' ).
