@@ -9,10 +9,10 @@
     "AS4USER":"SAP_CUSTOMER",
     "AS4DATE":"0000-00-00",
     "AS4TIME":"00:00:00",
-    "SOURCE":"@AccessControl.authorizationCheck: #MANDATORY\r\n@Metadata.allowExtensions: true\r\n@ObjectModel.sapObjectNodeType.name: 'ZREGESPPERC'\r\n@EndUserText.label: '###GENERATED Core Data Service Entity'\r\ndefine root view entity ZR_REGESPPERC\r\n  as select from ZTBREGESPPERC\r\n{\r\n  key ncm as Ncm,\r\n  key cest as Cest,\r\n  key matkl as Matkl,\r\n  key matnr as Matnr,\r\n  key validity_begin as ValidityBegin,\r\n  internal_tax_rate as InternalTaxRate,\r\n  deferral_rate as DeferralRate,\r\n  mva_rate as MvaRate,\r\n  @Semantics.user.createdBy: true\r\n  local_created_by as LocalCreatedBy,\r\n  @Semantics.systemDateTime.createdAt: true\r\n  local_created_at as LocalCreatedAt,\r\n  @Semantics.user.localInstanceLastChangedBy: true\r\n  local_last_changed_by as LocalLastChangedBy,\r\n  @Semantics.systemDateTime.localInstanceLastChangedAt: true\r\n  local_last_changed_at as LocalLastChangedAt,\r\n  @Semantics.systemDateTime.lastChangedAt: true\r\n  last_changed_at as LastChangedAt\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZTBREGESPPERC\"\n],\n\"ASSOCIATED\":\n[],\n\"BASE\":\n[],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
+    "SOURCE":"@AccessControl.authorizationCheck: #MANDATORY\r\n@Metadata.allowExtensions: true\r\n@EndUserText.label: 'Aliquotas - Regime Especial'\r\ndefine root view entity ZR_REGESPPERC\r\n  as select from ztbregespperc as Perc\r\n\r\n  association [0..1] to I_Product as _Product on $projection.Material = _Product.Product\r\n  //  association [0..1] to I_ProductGroup_2 as _ProductGroup on  $projection.Matkl = _ProductGroup.ProductGroup\r\n{\r\n  key ncm                   as Ncm,\r\n  key cest                  as Cest,\r\n  key material_group        as MaterialGroup,\r\n  key material              as Material,\r\n  key validity_begin        as ValidityBegin,\r\n      internal_tax_rate     as InternalTaxRate,\r\n      deferral_rate         as DeferralRate,\r\n      mva_rate              as MVARate,\r\n\r\n      @Semantics.user.createdBy: true\r\n      local_created_by      as LocalCreatedBy,\r\n      @Semantics.systemDateTime.createdAt: true\r\n      local_created_at      as LocalCreatedAt,\r\n      @Semantics.user.localInstanceLastChangedBy: true\r\n      local_last_changed_by as LocalLastChangedBy,\r\n      @Semantics.systemDateTime.localInstanceLastChangedAt: true\r\n      local_last_changed_at as LocalLastChangedAt,\r\n      @Semantics.systemDateTime.lastChangedAt: true\r\n      last_changed_at       as LastChangedAt,\r\n\r\n      /* Associations */\r\n      _Product\r\n      //      _ProductGroup\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZTBREGESPPERC\"\n],\n\"ASSOCIATED\":\n[\n\"I_PRODUCT\"\n],\n\"BASE\":\n[],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
     "PARENTNAME":"",
     "ACTFLAG":"",
-    "CHGFLAG":"",
+    "CHGFLAG":"35",
     "SOURCE_TYPE":"W",
     "SOURCE_ORIGIN":"0",
     "ABAP_LANGUAGE_VERSION":"5"
@@ -28,7 +28,7 @@
     "STRUCOBJN":"ZR_REGESPPERC",
     "DDLANGUAGE":"E",
     "AS4LOCAL":"N",
-    "DDTEXT":"###GENERATED Core Data Service Entity"
+    "DDTEXT":"Aliquotas - Regime Especial"
    }
   ]
  },
@@ -153,14 +153,14 @@
    {
     "STRUCOBJN":"ZR_REGESPPERC",
     "NAME":"ENDUSERTEXT",
-    "POSITION":7,
+    "POSITION":5,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZR_REGESPPERC",
     "NAME":"ENDUSERTEXT.LABEL",
-    "POSITION":8,
-    "VALUE":"'###GENERATED Core Data Service Entity'"
+    "POSITION":6,
+    "VALUE":"'Aliquotas - Regime Especial'"
    },
    {
     "STRUCOBJN":"ZR_REGESPPERC",
@@ -173,18 +173,6 @@
     "NAME":"METADATA.ALLOWEXTENSIONS",
     "POSITION":4,
     "VALUE":"true"
-   },
-   {
-    "STRUCOBJN":"ZR_REGESPPERC",
-    "NAME":"OBJECTMODEL",
-    "POSITION":5,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZR_REGESPPERC",
-    "NAME":"OBJECTMODEL.SAPOBJECTNODETYPE.NAME",
-    "POSITION":6,
-    "VALUE":"'ZREGESPPERC'"
    }
   ]
  },

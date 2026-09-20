@@ -9,7 +9,7 @@
     "AS4USER":"SAP_CUSTOMER",
     "AS4DATE":"0000-00-00",
     "AS4TIME":"00:00:00",
-    "SOURCE":"@Metadata.allowExtensions: true\r\n@Metadata.ignorePropagatedAnnotations: true\r\n@Endusertext: {\r\n  Label: '###GENERATED Core Data Service Entity'\r\n}\r\n@Objectmodel: {\r\n  Sapobjectnodetype.Name: 'ZREGESPPERC'\r\n}\r\n@AccessControl.authorizationCheck: #MANDATORY\r\ndefine root view entity ZC_REGESPPERC\r\n  provider contract TRANSACTIONAL_QUERY\r\n  as projection on ZR_REGESPPERC\r\n  association [1..1] to ZR_REGESPPERC as _BaseEntity on $projection.NCM = _BaseEntity.NCM and $projection.CEST = _BaseEntity.CEST and $projection.MATKL = _BaseEntity.MATKL and $projection.MATNR = _BaseEntity.MATNR and $projection.VALIDITYBEGIN = _BaseEntity.VALIDITYBEGIN\r\n{\r\n  key Ncm,\r\n  key Cest,\r\n  key Matkl,\r\n  key Matnr,\r\n  key ValidityBegin,\r\n  InternalTaxRate,\r\n  DeferralRate,\r\n  MvaRate,\r\n  @Semantics: {\r\n    User.Createdby: true\r\n  }\r\n  LocalCreatedBy,\r\n  @Semantics: {\r\n    Systemdatetime.Createdat: true\r\n  }\r\n  LocalCreatedAt,\r\n  @Semantics: {\r\n    User.Localinstancelastchangedby: true\r\n  }\r\n  LocalLastChangedBy,\r\n  @Semantics: {\r\n    Systemdatetime.Localinstancelastchangedat: true\r\n  }\r\n  LocalLastChangedAt,\r\n  @Semantics: {\r\n    Systemdatetime.Lastchangedat: true\r\n  }\r\n  LastChangedAt,\r\n  _BaseEntity\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ASSOCIATED\":\n[\n\"ZR_REGESPPERC\"\n],\n\"BASE\":\n[],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
+    "SOURCE":"@EndUserText.label: 'Cadastro de Percentuais - Regime Especial'\r\n@AccessControl.authorizationCheck: #MANDATORY\r\n@Metadata.allowExtensions: true\r\n@Search.searchable: true\r\n@ObjectModel.semanticKey: [ 'Ncm', 'Cest', 'MaterialGroup', 'Material' ]\r\ndefine root view entity ZC_REGESPPERC\r\n  provider contract transactional_query\r\n  as projection on ZR_REGESPPERC\r\n  association [1..1] to ZR_REGESPPERC as _BaseEntity on  $projection.Ncm           = _BaseEntity.Ncm\r\n                                                     and $projection.Cest          = _BaseEntity.Cest\r\n                                                     and $projection.MaterialGroup = _BaseEntity.MaterialGroup\r\n                                                     and $projection.Material      = _BaseEntity.Material\r\n                                                     and $projection.ValidityBegin = _BaseEntity.ValidityBegin\r\n\r\n{\r\n      @Search.defaultSearchElement: true\r\n      // >>> preencher após localizar a view liberada de NCM no seu tenant\r\n      // @Consumption.valueHelpDefinition: [ { entity: { name:    '<VIEW_NCM>',\r\n      //                                                 element: '<ELEMENTO>' },\r\n      //                                       useForValidation: true } ]\r\n  key Ncm,\r\n\r\n      @Search.defaultSearchElement: true\r\n      // >>> preencher após localizar a view liberada de CEST no seu tenant\r\n      // @Consumption.valueHelpDefinition: [ { entity: { name:    '<VIEW_CEST>',\r\n      //                                                 element: '<ELEMENTO>' },\r\n      //                                       useForValidation: true } ]\r\n  key Cest,\r\n\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'I_ProductGroup_2',\r\n      //                                                      element: 'ProductGroup' },\r\n      //                                            useForValidation: true } ]\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'ZI_MATLGROUP4_VH',\r\n      //                                                   element: 'FourthSalesSpecProductGroup' },\r\n      //                                         useForValidation: false } ]\r\n      //      @Search.defaultSearchElement: true\r\n  key MaterialGroup,\r\n\r\n      @Consumption.valueHelpDefinition: [{\r\n        entity: { name: 'I_ProductStdVH', element: 'Product' }\r\n//        useForValidation: true\r\n      }]\r\n  key Material,\r\n\r\n      @Semantics.businessDate.from: true\r\n  key ValidityBegin,\r\n\r\n      InternalTaxRate,\r\n      DeferralRate,\r\n      MVARate,\r\n      LocalCreatedBy,\r\n      LocalCreatedAt,\r\n      LocalLastChangedBy,\r\n      LocalLastChangedAt,\r\n      LastChangedAt,\r\n\r\n      /* Associations */\r\n      _Product\r\n      //      _ProductGroup\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ASSOCIATED\":\n[\n\"I_PRODUCT\"\n],\n\"BASE\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
     "PARENTNAME":"",
     "ACTFLAG":"",
     "CHGFLAG":"",
@@ -28,7 +28,7 @@
     "STRUCOBJN":"ZC_REGESPPERC",
     "DDLANGUAGE":"E",
     "AS4LOCAL":"N",
-    "DDTEXT":"###GENERATED Core Data Service Entity"
+    "DDTEXT":"Cadastro de Percentuais - Regime Especial"
    }
   ]
  },
@@ -50,107 +50,16 @@
   [
    {
     "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LASTCHANGEDAT",
-    "NAME":"SEMANTICS",
-    "POSITION":15,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LASTCHANGEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME",
-    "POSITION":16,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LASTCHANGEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME.LASTCHANGEDAT",
-    "POSITION":17,
-    "VALUE":"true"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDAT",
-    "NAME":"SEMANTICS",
-    "POSITION":6,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME",
-    "POSITION":7,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME.CREATEDAT",
-    "POSITION":8,
-    "VALUE":"true"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDBY",
-    "NAME":"SEMANTICS",
-    "POSITION":3,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDBY",
-    "NAME":"SEMANTICS.USER",
-    "POSITION":4,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALCREATEDBY",
-    "NAME":"SEMANTICS.USER.CREATEDBY",
+    "LFIELDNAME":"CEST",
+    "NAME":"SEARCH",
     "POSITION":5,
-    "VALUE":"true"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDAT",
-    "NAME":"SEMANTICS",
-    "POSITION":12,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME",
-    "POSITION":13,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDAT",
-    "NAME":"SEMANTICS.SYSTEMDATETIME.LOCALINSTANCELASTCHANGEDAT",
-    "POSITION":14,
-    "VALUE":"true"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDBY",
-    "NAME":"SEMANTICS",
-    "POSITION":9,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDBY",
-    "NAME":"SEMANTICS.USER",
-    "POSITION":10,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "LFIELDNAME":"LOCALLASTCHANGEDBY",
-    "NAME":"SEMANTICS.USER.LOCALINSTANCELASTCHANGEDBY",
-    "POSITION":11,
+    "LFIELDNAME":"CEST",
+    "NAME":"SEARCH.DEFAULTSEARCHELEMENT",
+    "POSITION":6,
     "VALUE":"true"
    },
    {
@@ -166,6 +75,62 @@
     "NAME":"ABAPCATALOG.INTERNAL.ISMANDT",
     "POSITION":2,
     "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"MATERIAL",
+    "NAME":"CONSUMPTION",
+    "POSITION":7,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"MATERIAL",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY",
+    "POSITION":8,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"MATERIAL",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.ELEMENT",
+    "POSITION":10,
+    "VALUE":"'Product'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"MATERIAL",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.NAME",
+    "POSITION":9,
+    "VALUE":"'I_ProductStdVH'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"SEARCH",
+    "POSITION":3,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"SEARCH.DEFAULTSEARCHELEMENT",
+    "POSITION":4,
+    "VALUE":"true"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"VALIDITYBEGIN",
+    "NAME":"SEMANTICS",
+    "POSITION":11,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"VALIDITYBEGIN",
+    "NAME":"SEMANTICS.BUSINESSDATE.FROM",
+    "POSITION":12,
+    "VALUE":"true"
    }
   ]
  },
@@ -176,68 +141,80 @@
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "NAME":"ACCESSCONTROL",
-    "POSITION":10,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"ACCESSCONTROL.AUTHORIZATIONCHECK",
-    "POSITION":11,
-    "VALUE":"#MANDATORY"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"ENDUSERTEXT",
-    "POSITION":5,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"ENDUSERTEXT.LABEL",
-    "POSITION":6,
-    "VALUE":"'###GENERATED Core Data Service Entity'"
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"METADATA",
-    "POSITION":1,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"METADATA",
     "POSITION":3,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"METADATA.ALLOWEXTENSIONS",
-    "POSITION":2,
-    "VALUE":"true"
+    "NAME":"ACCESSCONTROL.AUTHORIZATIONCHECK",
+    "POSITION":4,
+    "VALUE":"#MANDATORY"
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"METADATA.IGNOREPROPAGATEDANNOTATIONS",
-    "POSITION":4,
+    "NAME":"ENDUSERTEXT",
+    "POSITION":1,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"ENDUSERTEXT.LABEL",
+    "POSITION":2,
+    "VALUE":"'Cadastro de Percentuais - Regime Especial'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"METADATA",
+    "POSITION":5,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"METADATA.ALLOWEXTENSIONS",
+    "POSITION":6,
     "VALUE":"true"
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "NAME":"OBJECTMODEL",
+    "POSITION":9,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"OBJECTMODEL.SEMANTICKEY$1$",
+    "POSITION":10,
+    "VALUE":"'Ncm'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"OBJECTMODEL.SEMANTICKEY$2$",
+    "POSITION":11,
+    "VALUE":"'Cest'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"OBJECTMODEL.SEMANTICKEY$3$",
+    "POSITION":12,
+    "VALUE":"'MaterialGroup'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"OBJECTMODEL.SEMANTICKEY$4$",
+    "POSITION":13,
+    "VALUE":"'Material'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "NAME":"SEARCH",
     "POSITION":7,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"OBJECTMODEL.SAPOBJECTNODETYPE",
+    "NAME":"SEARCH.SEARCHABLE",
     "POSITION":8,
-    "VALUE":""
-   },
-   {
-    "STRUCOBJN":"ZC_REGESPPERC",
-    "NAME":"OBJECTMODEL.SAPOBJECTNODETYPE.NAME",
-    "POSITION":9,
-    "VALUE":"'ZREGESPPERC'"
+    "VALUE":"true"
    }
   ]
  },
