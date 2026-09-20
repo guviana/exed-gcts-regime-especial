@@ -7,9 +7,9 @@
     "DCLNAME":"ZC_REGESPPERC",
     "AS4LOCAL":"A",
     "AS4USER":"SAP_CUSTOMER",
-    "AS4DATE":"2026-09-14",
-    "AS4TIME":"17:15:41",
-    "SOURCE":"@EndUserText.label: 'ZC_REGESPPERC'\r\n@MappingRole: true\r\ndefine role ZC_REGESPPERC {\r\n  grant select on ZC_REGESPPERC\r\n  where INHERITING CONDITIONS FROM ENTITY ZR_REGESPPERC REPLACING { ROOT WITH _BaseEntity };\r\n}",
+    "AS4DATE":"2026-09-20",
+    "AS4TIME":"12:54:23",
+    "SOURCE":"@EndUserText.label: 'ZC_REGESPPERC'\r\n@MappingRole: true\r\ndefine role ZC_REGESPPERC {\r\n  grant select on ZC_REGESPPERC\r\n  where INHERITING CONDITIONS FROM ENTITY ZR_REGESPPERC;\r\n}",
     "PARENTNAME":"",
     "ABAP_LANGUAGE_VERSION":"5"
    }
