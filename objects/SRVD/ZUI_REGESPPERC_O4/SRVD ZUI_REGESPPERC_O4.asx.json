@@ -7,9 +7,9 @@
     "SRVDNAME":"ZUI_REGESPPERC_O4",
     "VERSION":"A",
     "CHANGED_BY":"SAP_CUSTOMER",
-    "CHANGED_ON":"2026-09-14",
-    "CHANGED_AT":"17:15:43",
-    "DT_UUID":"FA163E8E07B21FD1AC8BFD41262FFC05",
+    "CHANGED_ON":"2026-09-23",
+    "CHANGED_AT":"17:43:37",
+    "DT_UUID":"FA163E8E07B21FD1ADEEC9B4CD005C56",
     "SOURCE_ORIGIN":"0",
     "SRVD_SOURCE_TYPE":"S",
     "ABAP_LANGUAGE_VERSION":"5"
@@ -35,7 +35,7 @@
    {
     "SRVDNAME":"ZUI_REGESPPERC_O4",
     "VERSION":"A",
-    "SOURCE":"@EndUserText: {\r\n  label: 'Service Definition for ZC_REGESPPERC'\r\n}\r\n@ObjectModel: {\r\n  leadingEntity: {\r\n    name: 'ZC_REGESPPERC'\r\n  }\r\n}\r\ndefine service ZUI_REGESPPERC_O4 provider contracts odata_v4_ui {\r\n  expose ZC_REGESPPERC;\r\n}"
+    "SOURCE":"@EndUserText: {\r\n  label: 'Service Definition for ZC_REGESPPERC'\r\n}\r\n@ObjectModel: {\r\n  leadingEntity: {\r\n    name: 'ZC_REGESPPERC'\r\n  }\r\n}\r\ndefine service ZUI_REGESPPERC_O4\r\n  provider contracts odata_v4_ui {\r\n  expose ZC_REGESPPERC;\r\n  expose ZI_NCM_VH;\r\n}"
    }
   ]
  },
@@ -89,6 +89,15 @@
     "EXPOSED_ALIAS":"",
     "EXPOSED_ALIAS_RAW":"",
     "INCL_SERVICE":""
+   },
+   {
+    "SRVDNAME":"ZUI_REGESPPERC_O4",
+    "SERVICE":"ZUI_REGESPPERC_O4",
+    "EXPOSED_ARTIFACT":"ZI_NCM_VH",
+    "EXPOSED_ARTIFACT_TYPE":"E",
+    "EXPOSED_ALIAS":"",
+    "EXPOSED_ALIAS_RAW":"",
+    "INCL_SERVICE":""
    }
   ]
  },
@@ -101,8 +110,8 @@
     "SERVICE":"ZUI_REGESPPERC_O4",
     "SERVICE_RAW":"ZUI_REGESPPERC_O4",
     "SOURCE_TYPE":"S",
-    "DT_UUID":"FA163E8E07B21FD1AC8BFD41262FFC05",
-    "RT_HASH":"78E2CED2CF40DD137504D46BCF6B4CD665ECE9EA",
+    "DT_UUID":"FA163E8E07B21FD1ADEEC9B4CD005C56",
+    "RT_HASH":"927DC63AC93C55153853FE3A8A96364B794F9D3C",
     "GEN_VERSION":"0"
    }
   ]
