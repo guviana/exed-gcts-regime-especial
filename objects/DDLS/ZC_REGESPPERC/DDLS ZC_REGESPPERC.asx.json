@@ -9,7 +9,7 @@
     "AS4USER":"SAP_CUSTOMER",
     "AS4DATE":"0000-00-00",
     "AS4TIME":"00:00:00",
-    "SOURCE":"@EndUserText.label: 'Cadastro de Percentuais - Regime Especial'\r\n@AccessControl.authorizationCheck: #MANDATORY\r\n@Metadata.allowExtensions: true\r\n@Search.searchable: true\r\n@ObjectModel.semanticKey: [ 'Ncm', 'Cest', 'MaterialGroup', 'Material' ]\r\ndefine root view entity ZC_REGESPPERC\r\n  provider contract transactional_query\r\n  as projection on ZR_REGESPPERC\r\n\r\n{\r\n      @Search.defaultSearchElement: true\r\n      // >>> preencher após localizar a view liberada de NCM no seu tenant\r\n      // @Consumption.valueHelpDefinition: [ { entity: { name:    '<VIEW_NCM>',\r\n      //                                                 element: '<ELEMENTO>' },\r\n      //                                       useForValidation: true } ]\r\n  key Ncm,\r\n\r\n      @Search.defaultSearchElement: true\r\n      // >>> preencher após localizar a view liberada de CEST no seu tenant\r\n      // @Consumption.valueHelpDefinition: [ { entity: { name:    '<VIEW_CEST>',\r\n      //                                                 element: '<ELEMENTO>' },\r\n      //                                       useForValidation: true } ]\r\n  key Cest,\r\n\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'I_ProductGroup_2',\r\n      //                                                      element: 'ProductGroup' },\r\n      //                                            useForValidation: true } ]\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'ZI_MATLGROUP4_VH',\r\n      //                                                   element: 'FourthSalesSpecProductGroup' },\r\n      //                                         useForValidation: false } ]\r\n      //      @Search.defaultSearchElement: true\r\n  key MaterialGroup,\r\n\r\n      @Consumption.valueHelpDefinition: [{\r\n        entity: { name: 'I_ProductStdVH', element: 'Product' }\r\n//        useForValidation: true\r\n      }]\r\n  key Material,\r\n\r\n      @Semantics.businessDate.from: true\r\n  key ValidityBegin,\r\n\r\n      InternalTaxRate,\r\n      DeferralRate,\r\n      MVARate,\r\n      LocalCreatedBy,\r\n      LocalCreatedAt,\r\n      LocalLastChangedBy,\r\n      LocalLastChangedAt,\r\n      LastChangedAt,\r\n\r\n      /* Associations */\r\n      _Product\r\n      //      _ProductGroup\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ASSOCIATED\":\n[\n\"I_PRODUCT\"\n],\n\"BASE\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
+    "SOURCE":"@EndUserText.label: 'Cadastro de Percentuais - Regime Especial'\r\n@AccessControl.authorizationCheck: #MANDATORY\r\n@Metadata.allowExtensions: true\r\n@Search.searchable: true\r\n@ObjectModel.semanticKey: [ 'Ncm', 'Cest', 'MaterialGroup', 'Material' ]\r\ndefine root view entity ZC_REGESPPERC\r\n  provider contract transactional_query\r\n  as projection on ZR_REGESPPERC\r\n\r\n{\r\n      @Search.defaultSearchElement: true\r\n       @Consumption.valueHelpDefinition: [ { entity: { name:    'I_AE_CnsmpnTaxCtrlCodeTxt',\r\n                                                       element: 'ConsumptionTaxCtrlCode' },\r\n                                                       additionalBinding: [\r\n                                                        { element: 'Language' , localConstant: 'P' },\r\n                                                        { element: 'CountryCode' , localConstant: 'BR' }\r\n                                                       ],\r\n                                             useForValidation: true } ]\r\n  key Ncm,\r\n\r\n      @Search.defaultSearchElement: true\r\n      // >>> preencher após localizar a view liberada de CEST no seu tenant\r\n      // @Consumption.valueHelpDefinition: [ { entity: { name:    '<VIEW_CEST>',\r\n      //                                                 element: '<ELEMENTO>' },\r\n      //                                       useForValidation: true } ]\r\n  key Cest,\r\n\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'I_ProductGroup_2',\r\n      //                                                      element: 'ProductGroup' },\r\n      //                                            useForValidation: true } ]\r\n      //      @Consumption.valueHelpDefinition: [ { entity: { name:    'ZI_MATLGROUP4_VH',\r\n      //                                                   element: 'FourthSalesSpecProductGroup' },\r\n      //                                         useForValidation: false } ]\r\n      //      @Search.defaultSearchElement: true\r\n  key MaterialGroup,\r\n\r\n      @Consumption.valueHelpDefinition: [{\r\n        entity: { name: 'I_ProductStdVH', element: 'Product' }\r\n//        useForValidation: true\r\n      }]\r\n  key Material,\r\n\r\n      @Semantics.businessDate.from: true\r\n  key ValidityBegin,\r\n\r\n      InternalTaxRate,\r\n      DeferralRate,\r\n      MVARate,\r\n      LocalCreatedBy,\r\n      LocalCreatedAt,\r\n      LocalLastChangedBy,\r\n      LocalLastChangedAt,\r\n      LastChangedAt,\r\n\r\n      /* Associations */\r\n      _Product\r\n      //      _ProductGroup\r\n}\r\n/*+[internal] {\n\"BASEINFO\":\n{\n\"FROM\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ASSOCIATED\":\n[\n\"I_PRODUCT\"\n],\n\"BASE\":\n[\n\"ZR_REGESPPERC\"\n],\n\"ANNO_REF\":\n[],\n\"SCALAR_FUNCTION\":\n[],\n\"VERSION\":0,\n\"ANNOREF_EVALUATION_ERROR\":\"\"\n}\n}*/",
     "PARENTNAME":"",
     "ACTFLAG":"",
     "CHGFLAG":"D",
@@ -52,14 +52,14 @@
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"CEST",
     "NAME":"SEARCH",
-    "POSITION":5,
+    "POSITION":14,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"CEST",
     "NAME":"SEARCH.DEFAULTSEARCHELEMENT",
-    "POSITION":6,
+    "POSITION":15,
     "VALUE":"true"
    },
    {
@@ -80,29 +80,92 @@
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"MATERIAL",
     "NAME":"CONSUMPTION",
-    "POSITION":7,
+    "POSITION":16,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"MATERIAL",
     "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY",
-    "POSITION":8,
+    "POSITION":17,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"MATERIAL",
     "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.ELEMENT",
-    "POSITION":10,
+    "POSITION":19,
     "VALUE":"'Product'"
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"MATERIAL",
     "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.NAME",
-    "POSITION":9,
+    "POSITION":18,
     "VALUE":"'I_ProductStdVH'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION",
+    "POSITION":5,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ADDITIONALBINDING$1$.ELEMENT",
+    "POSITION":9,
+    "VALUE":"'Language'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ADDITIONALBINDING$1$.LOCALCONSTANT",
+    "POSITION":10,
+    "VALUE":"'P'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ADDITIONALBINDING$2$.ELEMENT",
+    "POSITION":11,
+    "VALUE":"'CountryCode'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ADDITIONALBINDING$2$.LOCALCONSTANT",
+    "POSITION":12,
+    "VALUE":"'BR'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY",
+    "POSITION":6,
+    "VALUE":""
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.ELEMENT",
+    "POSITION":8,
+    "VALUE":"'ConsumptionTaxCtrlCode'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.ENTITY.NAME",
+    "POSITION":7,
+    "VALUE":"'I_AE_CnsmpnTaxCtrlCodeTxt'"
+   },
+   {
+    "STRUCOBJN":"ZC_REGESPPERC",
+    "LFIELDNAME":"NCM",
+    "NAME":"CONSUMPTION.VALUEHELPDEFINITION$1$.USEFORVALIDATION",
+    "POSITION":13,
+    "VALUE":"true"
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
@@ -122,14 +185,14 @@
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"VALIDITYBEGIN",
     "NAME":"SEMANTICS",
-    "POSITION":11,
+    "POSITION":20,
     "VALUE":""
    },
    {
     "STRUCOBJN":"ZC_REGESPPERC",
     "LFIELDNAME":"VALIDITYBEGIN",
     "NAME":"SEMANTICS.BUSINESSDATE.FROM",
-    "POSITION":12,
+    "POSITION":21,
     "VALUE":"true"
    }
   ]
