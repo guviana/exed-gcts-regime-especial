@@ -6,7 +6,7 @@
           lv_bus_trans    TYPE string,
           lv_usage        TYPE string,
           lv_ship_to      TYPE string,
-          lv_regesp_valor TYPE string VALUE `false`.
+          lv_regesp_valor TYPE string VALUE `true`.
 
     CONSTANTS: lc_up007_tipo      TYPE string VALUE `usagePurpose`,
                lc_up007_valor     TYPE string VALUE `STSubstitute`,
@@ -28,7 +28,7 @@
           INTO  @DATA(lv_regesp_cli).
 
           IF lv_regesp_cli = 'X'.
-            lv_regesp_valor = `true`.
+            lv_regesp_valor = `false`.
 
             READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_item>) WITH KEY id = pricing_item-kposn.
             IF sy-subrc = 0.
