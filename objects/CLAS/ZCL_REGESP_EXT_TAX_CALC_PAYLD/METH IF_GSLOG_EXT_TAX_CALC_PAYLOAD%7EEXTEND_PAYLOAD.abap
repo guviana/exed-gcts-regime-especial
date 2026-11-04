@@ -1,11 +1,20 @@
   METHOD if_gslog_ext_tax_calc_payload~extend_payload.
 
-    DATA: lv_cest      TYPE zr_regespperc-Cest,
-          lv_bruto     TYPE p LENGTH 15 DECIMALS 2,
-          lv_base_mva  TYPE p LENGTH 15 DECIMALS 2,
-          lv_bus_trans TYPE string,
-          lv_usage     TYPE string,
-          lv_ship_to   TYPE string.
+    DATA: lv_cest         TYPE zr_regespperc-Cest,
+          lv_bruto        TYPE p LENGTH 15 DECIMALS 2,
+          lv_base_mva     TYPE p LENGTH 15 DECIMALS 2,
+          lv_bus_trans    TYPE string,
+          lv_usage        TYPE string,
+          lv_ship_to      TYPE string,
+          lv_regesp_valor TYPE string VALUE `false`.
+
+    CONSTANTS: lc_up007_tipo      TYPE string VALUE `usagePurpose`,
+               lc_up007_valor     TYPE string VALUE `STSubstitute`,
+               lc_regesp_atributo TYPE string VALUE 'avtx.lines.itemDescriptor.notSubjectToIcmsSt'.
+
+    DATA(lv_regesp_data) = COND d( WHEN pricing_header-prsdt IS NOT INITIAL
+                                   THEN pricing_header-prsdt
+                                   ELSE cl_abap_context_info=>get_system_date( ) ).
 
     IF zcl_regesp_plant_bo=>is_enabled( pricing_item-werks ) = abap_true.
       IF pricing_item-mvgr4 = '001'.
@@ -17,171 +26,195 @@
         WHERE BusinessPartner = @pricing_header-kunnr
         INTO  @DATA(lv_regesp_cli).
 
-        CHECK lv_regesp_cli <> 'X'.
+        IF lv_regesp_cli = 'X'.
+          lv_regesp_valor = `true`.
 
-        READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_item>) WITH KEY id = pricing_item-kposn.
-        IF sy-subrc = 0.
-          READ TABLE <fs_item>-item_classifications ASSIGNING FIELD-SYMBOL(<fs_item_class>) WITH KEY isc_system_code = 'cest'.
+          READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_item>) WITH KEY id = pricing_item-kposn.
           IF sy-subrc = 0.
-            lv_cest = <fs_item_class>-isc_code.
+            ASSIGN <fs_item>-additional_item_information[ type = lc_up007_tipo ] TO FIELD-SYMBOL(<fs_up007_info>).
+            IF sy-subrc = 0.
+              <fs_up007_info>-information = lc_up007_valor.
+            ELSE.
+              APPEND VALUE #( type        = lc_up007_tipo
+                              information = lc_up007_valor ) TO <fs_item>-additional_item_information.
+            ENDIF.
           ENDIF.
+        ELSE.
+          READ TABLE payload-_items ASSIGNING <fs_item> WITH KEY id = pricing_item-kposn.
+          IF sy-subrc = 0.
+            READ TABLE <fs_item>-item_classifications ASSIGNING FIELD-SYMBOL(<fs_item_class>) WITH KEY isc_system_code = 'cest'.
+            IF sy-subrc = 0.
+              lv_cest = <fs_item_class>-isc_code.
+            ENDIF.
 
 *            READ TABLE <fs_item>-additional_item_information ASSIGNING FIELD-SYMBOL(<fs_add_info>) WITH KEY type = 'custom_regEspNetPrice'.
 *            IF sy-subrc = 0.
 *              lv_bruto = <fs_add_info>-information.
 *            ENDIF.
-          lv_bruto = <fs_item>-unit_price.
+            lv_bruto = <fs_item>-unit_price.
 
-          READ TABLE <fs_item>-additional_item_information INTO DATA(ls_add_info) WITH KEY type = 'custom_regEspMvaBaseAmt'.
-          IF sy-subrc = 0.
-            DATA(lv_index) = sy-tabix.
-            lv_base_mva = ls_add_info-information.
-            "remove indice custom, nao deve ir para avalara so eh usado para passar valores entre as exits.
-            DELETE <fs_item>-additional_item_information INDEX lv_index.
+            READ TABLE <fs_item>-additional_item_information INTO DATA(ls_add_info) WITH KEY type = 'custom_regEspMvaBaseAmt'.
+            IF sy-subrc = 0.
+              DATA(lv_index) = sy-tabix.
+              lv_base_mva = ls_add_info-information.
+              "remove indice custom, nao deve ir para avalara so eh usado para passar valores entre as exits.
+              DELETE <fs_item>-additional_item_information INDEX lv_index.
+            ENDIF.
+
+            READ TABLE <fs_item>-additional_item_information INTO ls_add_info WITH KEY type = 'businessTransaction'.
+            IF sy-subrc = 0.
+              lv_bus_trans = ls_add_info-information.
+            ENDIF.
+
+            READ TABLE <fs_item>-additional_item_information  INTO ls_add_info  WITH KEY type = 'usage'.
+            IF sy-subrc = 0.
+              lv_usage = ls_add_info-information.
+            ENDIF.
+
+            READ TABLE payload-_locations ASSIGNING FIELD-SYMBOL(<fs_ship_to>) WITH KEY type = 'SHIP_TO'.
+            IF sy-subrc = 0.
+              lv_ship_to = <fs_ship_to>-state.
+            ENDIF.
+
           ENDIF.
 
-          READ TABLE <fs_item>-additional_item_information INTO ls_add_info WITH KEY type = 'businessTransaction'.
-          IF sy-subrc = 0.
-            lv_bus_trans = ls_add_info-information.
-          ENDIF.
+          "Business Transaction IN (S003,S004,S006,S007)
+          IF ( lv_bus_trans = 'S003' OR lv_bus_trans = 'S004' OR lv_bus_trans = 'S006' OR lv_bus_trans = 'S007' )
+          AND lv_usage = 'R'                                                                "usage = R
+          AND lv_ship_to = 'PR'.                                                            "somente clientes do Parana (ship_to = PR)
 
-          READ TABLE <fs_item>-additional_item_information  INTO ls_add_info  WITH KEY type = 'usage'.
-          IF sy-subrc = 0.
-            lv_usage = ls_add_info-information.
-          ENDIF.
+            " percentuais vigentes hoje, com material específico
+            DATA(ls_rates) = zcl_regesp_perc_bo=>get_rates( iv_ncm            = pricing_item-steuc
+                                                            iv_cest           = lv_cest
+                                                            iv_material_group = pricing_item-mvgr4
+                                                            iv_material       = pricing_item-matnr ).
+            IF ls_rates IS NOT INITIAL.
+              DATA(lv_calc_result) = zcl_regesp_perc_bo=>calculate_base( iv_gross    = lv_bruto
+                                                                         iv_mva_base = lv_base_mva
+                                                                         is_rates    = ls_rates ).
 
-          READ TABLE payload-_locations ASSIGNING FIELD-SYMBOL(<fs_ship_to>) WITH KEY type = 'SHIP_TO'.
-          IF sy-subrc = 0.
-            lv_ship_to = <fs_ship_to>-state.
-          ENDIF.
-        ENDIF.
+              IF lv_calc_result < lv_bruto. "unitPrice
+                DATA(lv_icms_st_liquido) = zcl_regesp_perc_bo=>calculate_icsm_st_liquido( iv_invoice_amount = lv_calc_result
+                                                                                          iv_last_nf_cost   = lv_base_mva
+                                                                                          is_rates          = ls_rates ).
 
-        "Business Transaction IN (S003,S004,S006,S007)
-        IF ( lv_bus_trans = 'S003' OR lv_bus_trans = 'S004' OR lv_bus_trans = 'S006' OR lv_bus_trans = 'S007' )
-        AND lv_usage = 'R'                                                                "usage = R
-        AND lv_ship_to = 'PR'.                                                            "somente clientes do Parana (ship_to = PR)
-
-          " percentuais vigentes hoje, com material específico
-          DATA(ls_rates) = zcl_regesp_perc_bo=>get_rates( iv_ncm            = pricing_item-steuc
-                                                          iv_cest           = lv_cest
-                                                          iv_material_group = pricing_item-mvgr4
-                                                          iv_material       = pricing_item-matnr ).
-          IF ls_rates IS NOT INITIAL.
-            DATA(lv_calc_result) = zcl_regesp_perc_bo=>calculate_base( iv_gross    = lv_bruto
-                                                                       iv_mva_base = lv_base_mva
-                                                                       is_rates    = ls_rates ).
-
-            IF lv_calc_result < lv_bruto. "unitPrice
-              DATA(lv_icms_st_liquido) = zcl_regesp_perc_bo=>calculate_icsm_st_liquido( iv_invoice_amount = lv_calc_result
-                                                                                        iv_last_nf_cost   = lv_base_mva
-                                                                                        is_rates          = ls_rates ).
-
-              IF lv_icms_st_liquido > 0.
-                <fs_item>-unit_price = lv_calc_result.
+                IF lv_icms_st_liquido > 0.
+                  <fs_item>-unit_price = lv_calc_result.
+                ENDIF.
               ENDIF.
             ENDIF.
           ENDIF.
-
         ENDIF.
       ENDIF.
     ENDIF.
 
-*--------------------------INICIO   REGIME ESPECIAL ICMS ST
-*    CONSTANTS lc_regesp_atributo TYPE string VALUE `regEspIcmsStSd`.
-    CONSTANTS lc_regesp_atributo TYPE string VALUE 'avtx.lines.itemDescriptor.notSubjectToIcmsSt'.
-
-    IF pricing_header-kappl = 'V'.
-
-      "Data de referencia: data de pricing; sem ela, data do sistema
-      DATA(lv_regesp_data) = COND d( WHEN pricing_header-prsdt IS NOT INITIAL
-                                     THEN pricing_header-prsdt
-                                     ELSE cl_abap_context_info=>get_system_date( ) ).
-      DATA(lv_regesp_valor) = `false`.
-
-      "R1 - grupo de mercadorias 4 do material
-      IF pricing_item-mvgr4 = '001'.
-
-        "R2 - NCM do item (sem pontos) no Cadastro de Percentuais, mesmo grupo,
-        "     material do item ou em branco, valido de <= data de referencia
-        DATA(lv_regesp_ncm) = replace( val = CONV string( pricing_item-steuc ) sub = `.` with = `` occ = 0 ).
-
-        SELECT Ncm, Material
-          FROM zr_regespperc WITH PRIVILEGED ACCESS
-          WHERE MaterialGroup  = @pricing_item-mvgr4
-            AND Material      IN ( @pricing_item-matnr, @space )
-            AND ValidityBegin <= @lv_regesp_data
-          INTO TABLE @DATA(lt_regesp_perc).
-
-        DATA(lv_regesp_r2) = abap_false.
-        LOOP AT lt_regesp_perc INTO DATA(ls_regesp_perc).
-          IF replace( val = CONV string( ls_regesp_perc-ncm ) sub = `.` with = `` occ = 0 ) = lv_regesp_ncm.
-            lv_regesp_r2 = abap_true.
-            EXIT.
-          ENDIF.
-        ENDLOOP.
-
-        IF lv_regesp_r2 = abap_true.
-
-          "R3 - centro habilitado para Regime Especial na data de referencia
-          SELECT SINGLE @abap_true
-            FROM zr_regespplant WITH PRIVILEGED ACCESS
-            WHERE Plant          = @pricing_item-werks
-              AND ValidityBegin <= @lv_regesp_data
-              AND ValidityEnd   >= @lv_regesp_data
-            INTO @DATA(lv_regesp_r3).
-
-          IF lv_regesp_r3 = abap_true.
-
-            "R4 - cliente com Regime Especial marcado no parceiro de negocios
-            SELECT SINGLE YY1_RegimeEspecial_bus
-              FROM I_BusinessPartner
-              WITH PRIVILEGED ACCESS
-              WHERE BusinessPartner = @pricing_header-kunnr
-              INTO @DATA(lv_regesp_cliente).
-
-            IF lv_regesp_cliente = abap_true.
-*              lv_regesp_valor = `Y`.
-              lv_regesp_valor = `true`.
-            ENDIF.
-          ENDIF.
-        ENDIF.
-      ENDIF.
-
-      "Item corrente do payload: ID = KOMP-KPOSN (CL_TXS_ITEMS->GET_ID); substitui valor anterior
-      READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_regesp_item>) WITH KEY id = pricing_item-kposn.
+    READ TABLE payload-_items ASSIGNING <fs_item> WITH KEY id = pricing_item-kposn.
+    IF sy-subrc = 0.
+      ASSIGN <fs_item>-item_extensions[ custom_field = lc_regesp_atributo ] TO FIELD-SYMBOL(<fs_regesp_custom_field>).
       IF sy-subrc = 0.
-*        ASSIGN <fs_regesp_item>-additional_item_information[ type = lc_regesp_atributo ] TO FIELD-SYMBOL(<fs_regesp_info>).
-*        IF sy-subrc = 0.
-*          <fs_regesp_info>-information = lv_regesp_valor.
-*        ELSE.
-*          APPEND VALUE #( type        = lc_regesp_atributo
-*                          information = lv_regesp_valor ) TO <fs_regesp_item>-additional_item_information.
-*        ENDIF.
-        ASSIGN <fs_regesp_item>-item_extensions[ custom_field = lc_regesp_atributo ] TO FIELD-SYMBOL(<fs_regesp_custom_field>).
-        IF sy-subrc = 0.
-          <fs_regesp_custom_field>-custom_field_value = lv_regesp_valor.
-        ELSE.
-          APPEND VALUE #( custom_field       = lc_regesp_atributo
-                          custom_field_value = lv_regesp_valor ) TO <fs_regesp_item>-item_extensions.
-        ENDIF.
-      ENDIF.
-    ENDIF.
-*--------------------------FIM      REGIME ESPECIAL ICMS ST
-
-*--------------------------INICIO   REGIME ESPECIAL UP007 OBJETIVO UTILIZACAO
-    CONSTANTS: lc_up007_tipo  TYPE string VALUE `usagePurpose`,
-               lc_up007_valor TYPE string VALUE `STSubstitute`.
-
-    "Item do Regime Especial pelo produto e centro (R1 a R3), com ou sem cliente marcado (R4):
-    "objetivo de utilizacao Substituto ST (UP007) direto no payload
-    IF lv_regesp_r3 = abap_true AND <fs_regesp_item> IS ASSIGNED.
-      ASSIGN <fs_regesp_item>-additional_item_information[ type = lc_up007_tipo ] TO FIELD-SYMBOL(<fs_up007_info>).
-      IF sy-subrc = 0.
-        <fs_up007_info>-information = lc_up007_valor.
+        <fs_regesp_custom_field>-custom_field_value = lv_regesp_valor.
       ELSE.
-        APPEND VALUE #( type        = lc_up007_tipo
-                        information = lc_up007_valor ) TO <fs_regesp_item>-additional_item_information.
+        APPEND VALUE #( custom_field       = lc_regesp_atributo
+                        custom_field_value = lv_regesp_valor ) TO <fs_item>-item_extensions.
       ENDIF.
     ENDIF.
-*--------------------------FIM      REGIME ESPECIAL UP007 OBJETIVO UTILIZACAO
+*
+**--------------------------INICIO   REGIME ESPECIAL ICMS ST
+**    CONSTANTS lc_regesp_atributo TYPE string VALUE `regEspIcmsStSd`.
+**    CONSTANTS lc_regesp_atributo TYPE string VALUE 'avtx.lines.itemDescriptor.notSubjectToIcmsSt'.
+*
+*    IF pricing_header-kappl = 'V'.
+*
+*      "Data de referencia: data de pricing; sem ela, data do sistema
+*      DATA(lv_regesp_data) = COND d( WHEN pricing_header-prsdt IS NOT INITIAL
+*                                     THEN pricing_header-prsdt
+*                                     ELSE cl_abap_context_info=>get_system_date( ) ).
+*      DATA(lv_regesp_valor) = `false`.
+*
+*      "R1 - grupo de mercadorias 4 do material
+*      IF pricing_item-mvgr4 = '001'.
+*
+*        "R2 - NCM do item (sem pontos) no Cadastro de Percentuais, mesmo grupo,
+*        "     material do item ou em branco, valido de <= data de referencia
+*        DATA(lv_regesp_ncm) = replace( val = CONV string( pricing_item-steuc ) sub = `.` with = `` occ = 0 ).
+*
+*        SELECT Ncm, Material
+*          FROM zr_regespperc WITH PRIVILEGED ACCESS
+*          WHERE MaterialGroup  = @pricing_item-mvgr4
+*            AND Material      IN ( @pricing_item-matnr, @space )
+*            AND ValidityBegin <= @lv_regesp_data
+*          INTO TABLE @DATA(lt_regesp_perc).
+*
+*        DATA(lv_regesp_r2) = abap_false.
+*        LOOP AT lt_regesp_perc INTO DATA(ls_regesp_perc).
+*          IF replace( val = CONV string( ls_regesp_perc-ncm ) sub = `.` with = `` occ = 0 ) = lv_regesp_ncm.
+*            lv_regesp_r2 = abap_true.
+*            EXIT.
+*          ENDIF.
+*        ENDLOOP.
+*
+*        IF lv_regesp_r2 = abap_true.
+*
+*          "R3 - centro habilitado para Regime Especial na data de referencia
+*          SELECT SINGLE @abap_true
+*            FROM zr_regespplant WITH PRIVILEGED ACCESS
+*            WHERE Plant          = @pricing_item-werks
+*              AND ValidityBegin <= @lv_regesp_data
+*              AND ValidityEnd   >= @lv_regesp_data
+*            INTO @DATA(lv_regesp_r3).
+*
+*          IF lv_regesp_r3 = abap_true.
+*
+*            "R4 - cliente com Regime Especial marcado no parceiro de negocios
+*            SELECT SINGLE YY1_RegimeEspecial_bus
+*              FROM I_BusinessPartner
+*              WITH PRIVILEGED ACCESS
+*              WHERE BusinessPartner = @pricing_header-kunnr
+*              INTO @DATA(lv_regesp_cliente).
+*
+*            IF lv_regesp_cliente = abap_true.
+**              lv_regesp_valor = `Y`.
+*              lv_regesp_valor = `true`.
+*            ENDIF.
+*          ENDIF.
+*        ENDIF.
+*      ENDIF.
+*
+*      "Item corrente do payload: ID = KOMP-KPOSN (CL_TXS_ITEMS->GET_ID); substitui valor anterior
+*      READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_regesp_item>) WITH KEY id = pricing_item-kposn.
+*      IF sy-subrc = 0.
+**        ASSIGN <fs_regesp_item>-additional_item_information[ type = lc_regesp_atributo ] TO FIELD-SYMBOL(<fs_regesp_info>).
+**        IF sy-subrc = 0.
+**          <fs_regesp_info>-information = lv_regesp_valor.
+**        ELSE.
+**          APPEND VALUE #( type        = lc_regesp_atributo
+**                          information = lv_regesp_valor ) TO <fs_regesp_item>-additional_item_information.
+**        ENDIF.
+*        ASSIGN <fs_regesp_item>-item_extensions[ custom_field = lc_regesp_atributo ] TO FIELD-SYMBOL(<fs_regesp_custom_field>).
+*        IF sy-subrc = 0.
+*          <fs_regesp_custom_field>-custom_field_value = lv_regesp_valor.
+*        ELSE.
+*          APPEND VALUE #( custom_field       = lc_regesp_atributo
+*                          custom_field_value = lv_regesp_valor ) TO <fs_regesp_item>-item_extensions.
+*        ENDIF.
+*      ENDIF.
+*    ENDIF.
+**--------------------------FIM      REGIME ESPECIAL ICMS ST
+
+**--------------------------INICIO   REGIME ESPECIAL UP007 OBJETIVO UTILIZACAO
+*    CONSTANTS: lc_up007_tipo  TYPE string VALUE `usagePurpose`,
+*               lc_up007_valor TYPE string VALUE `STSubstitute`.
+*
+*    "Item do Regime Especial pelo produto e centro (R1 a R3), com ou sem cliente marcado (R4):
+*    "objetivo de utilizacao Substituto ST (UP007) direto no payload
+*    IF lv_regesp_r3 = abap_true AND <fs_regesp_item> IS ASSIGNED.
+*      ASSIGN <fs_regesp_item>-additional_item_information[ type = lc_up007_tipo ] TO FIELD-SYMBOL(<fs_up007_info>).
+*      IF sy-subrc = 0.
+*        <fs_up007_info>-information = lc_up007_valor.
+*      ELSE.
+*        APPEND VALUE #( type        = lc_up007_tipo
+*                        information = lc_up007_valor ) TO <fs_regesp_item>-additional_item_information.
+*      ENDIF.
+*    ENDIF.
+**--------------------------FIM      REGIME ESPECIAL UP007 OBJETIVO UTILIZACAO
   ENDMETHOD.
