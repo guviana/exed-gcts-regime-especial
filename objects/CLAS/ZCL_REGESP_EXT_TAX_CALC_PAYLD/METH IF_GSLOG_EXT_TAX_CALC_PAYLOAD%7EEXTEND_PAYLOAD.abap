@@ -17,19 +17,29 @@
                                    ELSE cl_abap_context_info=>get_system_date( ) ).
 
     IF pricing_header-kappl = 'V'.
-      IF zcl_regesp_plant_bo=>is_enabled( pricing_item-werks ) = abap_true.
+      IF zcl_regesp_plant_bo=>is_enabled( iv_plant = pricing_item-werks iv_key_date = lv_regesp_data ) = abap_true.
         IF pricing_item-mvgr4 = '001'.
 
-          "verifica se cliente está marcado como regime especial, se for pular instrucao
-          SELECT SINGLE YY1_RegimeEspecial_bus
-          FROM I_BusinessPartner
-          WITH PRIVILEGED ACCESS
-          WHERE BusinessPartner = @pricing_header-kunnr
-          INTO  @DATA(lv_regesp_cli).
+          "R2 - NCM do item (sem pontos) no Cadastro de Percentuais, mesmo grupo,
+          "     material do item ou em branco, valido de <= data de referencia
+          DATA(lv_regesp_ncm) = replace( val = CONV string( pricing_item-steuc ) sub = `.` with = `` occ = 0 ).
 
-          IF lv_regesp_cli = 'X'.
-            lv_regesp_valor = `false`.
+          SELECT Ncm, Material
+            FROM zr_regespperc WITH PRIVILEGED ACCESS
+            WHERE MaterialGroup  = @pricing_item-mvgr4
+              AND Material      IN ( @pricing_item-matnr, @space )
+              AND ValidityBegin <= @lv_regesp_data
+            INTO TABLE @DATA(lt_regesp_perc).
 
+          DATA(lv_regesp_r2) = abap_false.
+          LOOP AT lt_regesp_perc INTO DATA(ls_regesp_perc).
+            IF replace( val = CONV string( ls_regesp_perc-ncm ) sub = `.` with = `` occ = 0 ) = lv_regesp_ncm.
+              lv_regesp_r2 = abap_true.
+              EXIT.
+            ENDIF.
+          ENDLOOP.
+
+          IF lv_regesp_r2 = abap_true.
             READ TABLE payload-_items ASSIGNING FIELD-SYMBOL(<fs_item>) WITH KEY id = pricing_item-kposn.
             IF sy-subrc = 0.
               ASSIGN <fs_item>-additional_item_information[ type = lc_up007_tipo ] TO FIELD-SYMBOL(<fs_up007_info>).
@@ -40,6 +50,17 @@
                                 information = lc_up007_valor ) TO <fs_item>-additional_item_information.
               ENDIF.
             ENDIF.
+          ENDIF.
+
+          "verifica se cliente está marcado como regime especial, se for pular instrucao
+          SELECT SINGLE YY1_RegimeEspecial_bus
+          FROM I_BusinessPartner
+          WITH PRIVILEGED ACCESS
+          WHERE BusinessPartner = @pricing_header-kunnr
+          INTO  @DATA(lv_regesp_cli).
+
+          IF lv_regesp_cli = 'X'.
+            lv_regesp_valor = `false`.
           ELSE.
             READ TABLE payload-_items ASSIGNING <fs_item> WITH KEY id = pricing_item-kposn.
             IF sy-subrc = 0.
